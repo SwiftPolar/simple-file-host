@@ -1,0 +1,25 @@
+{
+  "name": "simple-file-host",
+  "version": "0.0.1",
+  "description": "A simple restful service to put and retrieve files",
+  "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SwiftPolar/simple-file-host.git"
+  },
+  "author": "Lee Qixian",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SwiftPolar/simple-file-host/issues"
+  },
+  "homepage": "https://github.com/SwiftPolar/simple-file-host#readme",
+  "dependencies": {
+    "express": "^4.14.0"
+  }
+}
