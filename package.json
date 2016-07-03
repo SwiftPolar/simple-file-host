@@ -20,6 +20,8 @@
   },
   "homepage": "https://github.com/SwiftPolar/simple-file-host#readme",
   "dependencies": {
-    "express": "^4.14.0"
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "file-type": "^3.8.0"
   }
 }
