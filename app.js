@@ -11,6 +11,7 @@ var config = {
         fileName: 'File-Name', //what to save the file name as
         apiKey: 'Api-Key', //what is the field to put api key in
         checksum: 'Checksum', //field for file checksum
+        folder: 'Folder', //folder to place file within root upload path [*Optional]
     }
 };
 /*
@@ -60,7 +61,7 @@ var validateHeaders = function (req, res, next) { //check for any missing header
     Object.keys(headers).map(function (key) {
         var header = headers[key];
         var check = req.get(header);
-        if (!check) {
+        if (!check && key !== 'folder') { //we allow for folder field to be blank
             valid = false;
             errors.push("400 Missing header " + header);
         }
@@ -73,6 +74,15 @@ var authenticate = function (req, res, next) {
     var reqKey = req.get(config.headers.apiKey);
     (reqKey && reqKey === secret.apiKey) ? next()
         : response(res, 'error', '401 Unauthorized');
+};
+
+var directoryExists = function (directory) {
+    var directoryPath = config.filesPhysicalPath + "/" + directory;
+    try {
+        fs.statSync(directoryPath);
+    } catch (err) {
+        fs.mkdirSync(directoryPath);
+    }
 };
 
 app.post('/upload', validateHeaders, authenticate, rawParser, function (req, res, next) {
@@ -90,14 +100,23 @@ app.post('/upload', validateHeaders, authenticate, rawParser, function (req, res
         return response(res, 'error', '400 Checksum not matched');
     }
 
+    var folder = req.get(headers.folder);
+    !folder ? folder = ''
+        : directoryExists(folder);
+
     var uploadType = fileType(raw);
     var fileName = req.get(headers.fileName);
     var saveAs = fileName + '.' + uploadType.ext;
-    fs.writeFile(config.filesPhysicalPath + '/' + saveAs, raw, function (err) {
+    var savePath = (folder === '') ? config.filesPhysicalPath + '/' + saveAs
+        : config.filesPhysicalPath + '/' + folder + '/' + saveAs;
+
+    fs.writeFile(savePath, raw, function (err) {
         if (err) {
             return response(res, 'error', '500 Internal Server Error');
         }
-        var httpResult = req.protocol + '://' + req.get('host') + config.filesContextPath + '/' + saveAs;
+        var httpResult = (folder === '')
+            ? req.protocol + '://' + req.get('host') + config.filesContextPath + '/' + saveAs
+            : req.protocol + '://' + req.get('host') + config.filesContextPath + '/' + folder + '/' + saveAs;
         response(res, 'success', httpResult)
     });
 });
