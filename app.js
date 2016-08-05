@@ -3,6 +3,13 @@
  * */
 var config = {
     port: 1337,
+    behindProxy: true, //set to true if using behind a proxy e.g. nginx, apache etc.
+    https: {
+        enabled: true, //set to true if you're using a SSL cert
+        key: '', //path to private key file
+        cert: '', //path to full chain file
+        ca: '' //path to chain file
+    },
     filesContextPath: '/files',
     filesPhysicalPath: __dirname + '/uploads', //use absolute path to ensure that directory is correct
     uploadSizeLimit: '1mb',
@@ -19,6 +26,7 @@ var config = {
  * */
 
 var express = require('express'),
+    https = require('https'),
     fs = require('fs'),
     bodyParser = require('body-parser'),
     fileType = require('file-type'),
@@ -125,6 +133,23 @@ app.get('/', function (req, res) {
     res.send('Hello World!');
 });
 
-app.listen(config.port, function () {
-    console.log("Very simple file server is now listing on port: " + config.port);
-});
+if (config.behindProxy) {
+    //You might need to configure this if you're using a more advanced setup
+    app.set('trust proxy', true);
+    app.set('trust proxy', 'loopback');
+}
+
+if (config.https.enabled) {
+    var ssl = {
+        key: fs.readFileSync(config.https.key),
+        cert: fs.readFileSync(config.https.cert),
+        ca: fs.readFileSync(config.https.ca),
+    };
+    https.createServer(ssl, app).listen(config.port, function () {
+        console.log("Very simple file server (SSL enabled) is now listing on port: " + config.port);
+    });
+} else {
+    app.listen(config.port, function () {
+        console.log("Very simple file server is now listing on port: " + config.port);
+    });
+}
