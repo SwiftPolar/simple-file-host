@@ -1,6 +1,3 @@
-/*
- * START of Configuration
- * */
 var config = {
     port: 1337,
     behindProxy: true, //set to true if using behind a proxy e.g. nginx, apache etc.
